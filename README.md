@@ -4,6 +4,13 @@ A high-performance rate limiting service built with Rust and Axum. Supports slid
 
 Live demo: [https://rate-limiter-tau.vercel.app/](https://rate-limiter-tau.vercel.app/)
 
+## Architecture & Deployment
+
+The application is architected as a distributed system deployed across modern cloud services:
+- **Frontend**: Hosted on **Vercel** ([https://rate-limiter-tau.vercel.app/](https://rate-limiter-tau.vercel.app/)) serving a responsive web dashboard.
+- **Backend API**: Deployed on **Render** (built with Rust's Axum & Tokio runtime), utilizing a custom CORS configuration to securely expose standardized rate limit headers to the frontend.
+- **Database/Cache**: Backed by **Upstash Serverless Redis** for distributed rate limit state tracking, connected securely using Rust's `tls-rustls` SSL connector.
+
 ## Features
 
 - **Multiple Algorithms** - Supports both **Sliding Window** and **Fixed Window** rate limiting strategies.
