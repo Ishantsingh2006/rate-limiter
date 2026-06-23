@@ -1,0 +1,18 @@
+# Rust build artifacts
+target/
+
+# Environment variables (secrets/local config)
+.env
+
+# IDE / Editor configuration directories
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db

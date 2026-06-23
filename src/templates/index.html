@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Limiter Dashboard</title>
+    <!-- Modern Typography: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #1e1b4b 100%);
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #ec4899);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            background: rgba(31, 41, 55, 0.8);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(31, 41, 55, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(31, 41, 55, 0.4);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+
+        .progress-label-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-percentage {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-track {
+            height: 12px;
+            width: 100%;
+            background: rgba(31, 41, 55, 0.6);
+            border-radius: 9999px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            border-radius: 9999px;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            color: white;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .action-button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .action-button:disabled {
+            background: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Countdown display */
+        .countdown-info {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--danger);
+            margin-top: 1rem;
+            height: 1.5rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .countdown-info.active {
+            opacity: 1;
+        }
+
+        /* Console log section */
+        .log-section {
+            margin-top: 2.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 1.5rem;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .log-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .clear-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .console-log {
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            scroll-behavior: smooth;
+        }
+
+        .log-entry {
+            display: flex;
+            flex-direction: column;
+            padding: 0.4rem;
+            border-radius: 6px;
+            border-left: 3px solid #9ca3af;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .log-entry.success {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .log-entry.error {
+            border-left-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .log-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #6b7280;
+            margin-bottom: 0.2rem;
+            font-size: 0.75rem;
+        }
+
+        .log-message {
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        /* Pulse animations */
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+
+        .blocked-animation {
+            animation: pulse-red 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="dashboard" class="dashboard-container">
+        <h1>Rate Limiter Demo</h1>
+
+        <div class="input-group">
+            <label for="token-input">API Token / Client ID</label>
+            <div class="input-wrapper">
+                <input type="text" id="token-input" value="demo-client-token" placeholder="Enter custom token to reset limit bucket...">
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Remaining Requests</div>
+                <div id="stat-remaining" class="stat-value">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Limit Capacity</div>
+                <div id="stat-limit" class="stat-value">-</div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-label-container">
+                <span class="progress-percentage">Limit Used: <span id="progress-percent-val">0%</span></span>
+            </div>
+            <div class="progress-track">
+                <div id="bar" class="progress-bar"></div>
+            </div>
+        </div>
+
+        <button id="send-btn" class="action-button">
+            Send Request
+        </button>
+
+        <div id="countdown" class="countdown-info"></div>
+
+        <div class="log-section">
+            <div class="log-header">
+                <span class="log-title">API Response Log</span>
+                <button id="clear-btn" class="clear-btn">Clear Log</button>
+            </div>
+            <div id="console-log" class="console-log">
+                <div style="color: #6b7280; font-style: italic; text-align: center; margin-top: auto; margin-bottom: auto;">
+                    No requests sent yet. Click 'Send Request' to query the backend API.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sendBtn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const consoleLog = document.getElementById('console-log');
+        const tokenInput = document.getElementById('token-input');
+        const bar = document.getElementById('bar');
+        const percentVal = document.getElementById('progress-percent-val');
+        const statRemaining = document.getElementById('stat-remaining');
+        const statLimit = document.getElementById('stat-limit');
+        const countdown = document.getElementById('countdown');
+        const dashboard = document.getElementById('dashboard');
+
+        let isBlocked = false;
+        let syncTimer = null; // We use a timeout variable to control the background loop
+
+        function addLogEntry(status, method, url, payload, isError = false) {
+            if (consoleLog.querySelector('div[style*="italic"]')) {
+                consoleLog.innerHTML = '';
+            }
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${isError ? 'error' : 'success'}`;
+            
+            entry.innerHTML = `
+                <div class="log-meta">
+                    <span>[${timestamp}] ${method} ${url}</span>
+                    <span>Status: ${status}</span>
+                </div>
+                <div class="log-message">${JSON.stringify(payload)}</div>
+            `;
+            consoleLog.appendChild(entry);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        // A single, clean function to update all UI states
+        function updateDashboardUI(remaining, limit, resetSec) {
+            if (limit === null || isNaN(limit)) return;
+
+            // 1. Update text stats
+            statLimit.textContent = limit;
+            statRemaining.textContent = remaining;
+
+            // 2. Update Progress Bar
+            const used = limit - remaining;
+            const percentage = Math.max(0, Math.min(100, (used / limit) * 100));
+            bar.style.width = `${percentage}%`;
+            percentVal.textContent = `${Math.round(percentage)}%`;
+
+            if (percentage >= 100) {
+                bar.style.backgroundColor = 'var(--danger)';
+            } else if (percentage >= 66) {
+                bar.style.backgroundColor = 'var(--warning)';
+            } else {
+                bar.style.backgroundColor = 'var(--primary)';
+            }
+
+            // 3. Handle Blocked Visuals
+            if (remaining === 0) {
+                isBlocked = true;
+                dashboard.classList.add('blocked-animation');
+                sendBtn.textContent = 'Blocked';
+                sendBtn.disabled = true;
+            } else {
+                isBlocked = false;
+                dashboard.classList.remove('blocked-animation');
+                sendBtn.textContent = 'Send Request';
+                sendBtn.disabled = false;
+            }
+        }
+
+        // Background poller that checks the /api/limiter-status endpoint
+        async function syncLimiterStatus() {
+            const token = tokenInput.value.trim() || 'demo-client-token';
+            const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? 'http://127.0.0.1:3000'
+                : 'https://rate-limiter-0p1u.onrender.com';
+
+            try {
+                const response = await fetch(`${apiBase}/api/limiter-status?_t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDashboardUI(data.remaining, data.limit, data.rest_in_sec);
+                }
+            } catch (err) {
+                console.error("Failed to sync rate limit status:", err);
+            } finally {
+                // Schedule the next sync exactly 1 second AFTER this one finishes.
+                syncTimer = setTimeout(syncLimiterStatus, 1000);
+            }
+        }
+
+        async function sendRequest() {
+            if (isBlocked) return;
+
+            const token = tokenInput.value.trim() || 'demo-client-token';
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+
+            const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? 'http://127.0.0.1:3000'
+                : 'https://rate-limiter-0p1u.onrender.com';
+
+            try {
+                const response = await fetch(`${apiBase}/api/data?_t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                // Pull metrics directly from the RFC headers for instant UI feedback
+                const limit = response.headers.get('ratelimit-limit');
+                const remaining = response.headers.get('ratelimit-remaining');
+                const reset = response.headers.get('ratelimit-reset');
+
+                const limitVal = limit ? parseInt(limit, 10) : null;
+                const remainingVal = remaining ? parseInt(remaining, 10) : null;
+                const resetVal = reset ? parseFloat(reset) : 0;
+
+                if (limitVal !== null && remainingVal !== null) {
+                    updateDashboardUI(remainingVal, limitVal, resetVal);
+                }
+
+                if (response.status === 429) {
+                    const text = await response.text();
+                    addLogEntry(429, 'GET', '/api/data', { error: 'Too Many Requests', message: text.trim() }, true);
+                } else if (response.ok) {
+                    const data = await response.json();
+                    addLogEntry(response.status, 'GET', '/api/data', data, false);
+                } else {
+                    const text = await response.text();
+                    addLogEntry(response.status, 'GET', '/api/data', { error: 'Request Failed', details: text.trim() }, true);
+                }
+            } catch (error) {
+                console.error('Request failed:', error);
+                addLogEntry('Error', 'GET', '/api/data', { error: 'Network Error', message: error.message }, true);
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send Request';
+            }
+        }
+
+        sendBtn.addEventListener('click', sendRequest);
+
+        tokenInput.addEventListener('change', () => {
+            // If the user types a new token, clear the old timer and sync immediately
+            clearTimeout(syncTimer);
+            syncLimiterStatus();
+        });
+
+        clearBtn.addEventListener('click', () => {
+            consoleLog.innerHTML = `
+                <div style="color: #6b7280; font-style: italic; text-align: center; margin-top: auto; margin-bottom: auto;">
+                    Logs cleared. Click 'Send Request' to query the backend API.
+                </div>
+            `;
+        });
+
+        // Kick off the background loop when the page loads
+        syncLimiterStatus();
+    </script>
+</body>
+</html>

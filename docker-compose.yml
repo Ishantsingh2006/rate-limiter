@@ -1,0 +1,28 @@
+services:
+  api:
+    build:
+      context: .
+    container_name: rate_limiter_api
+    ports:
+      - "${SERVER_PORT:-3000}:${SERVER_PORT:-3000}"
+    environment:
+      - SERVER_PORT=${SERVER_PORT:-3000}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - LIMITER_MAX_REQUESTS=${LIMITER_MAX_REQUESTS:-5}
+      - LIMITER_WINDOW_SIZE_MS=${LIMITER_WINDOW_SIZE_MS:-60000}
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: rate_limiter_redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+volumes:
+  redis_data:

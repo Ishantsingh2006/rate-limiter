@@ -1,0 +1,10 @@
+[package]
+name = "limiter_engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+redis = { version = "0.24", features = ["tokio-comp", "tls-rustls", "tokio-rustls-comp"] }
+deadpool-redis = "0.14"
+thiserror = "1.0"
+tokio = { version = "1", features = ["full"] }
