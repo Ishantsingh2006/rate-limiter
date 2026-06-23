@@ -53,17 +53,24 @@ cargo test --all
 cargo test -p limiter_engine
 ```
 
-## Usage in Terminal
+## Usage
 
-Query the protected API endpoint (each request consumes 1 quota token):
-
+You can test the rate limiting behavior locally or directly against the live production deployment using curl.
+### 1.Consuming Quota
+Each request to the data endpoint consumes 1 quota token.
+#### Test Locally:
 ```bash
 curl -i -X GET \
   -H "Authorization: Bearer demo-client-token" \
   http://127.0.0.1:3000/api/data
 ```
-
-**Response headers:**
+#### Test Production:
+```bsh
+curl -i -X GET \
+  -H "Authorization: Bearer demo-client-token" \
+  https://rate-limiter-0p1u.onrender.com/api/data
+```
+**Expected Response headers:**
 ```http
 HTTP/1.1 200 OK
 ratelimit-limit: 5
@@ -71,16 +78,22 @@ ratelimit-remaining: 4
 ratelimit-reset: 59
 cache-control: no-store, no-cache, must-revalidate
 ```
-
-Query the rate limit status without consuming your quota:
-
+### 2.Checking Status
+Query the rate limit status without consuming quota:
+#### Test Locally:
 ```bash
 curl -i -X GET \
   -H "Authorization: Bearer demo-client-token" \
   http://127.0.0.1:3000/api/limiter-status
 ```
+#### Test Production:
+```bash
+curl -i -X GET \
+  -H "Authorization: Bearer demo-client-token" \
+  https://rate-limiter-0p1u.onrender.com/api/limiter-status
+```
 
-**Response body:**
+**Expected Response body:**
 ```json
 {
   "limit": 5,
@@ -93,6 +106,6 @@ curl -i -X GET \
 
 The application is architected as a distributed system deployed across modern cloud services:
 - **Frontend**: Hosted on **Vercel** ([https://rate-limiter-tau.vercel.app/](https://rate-limiter-tau.vercel.app/)) serving a responsive web dashboard.
-- **Backend API**: Deployed on **Render** (built with Rust's Axum & Tokio runtime).
+- **Backend API**: Deployed on **Render**([https://rate-limiter-0p1u.onrender.com](https://rate-limiter-0p1u.onrender.com)) (built with Rust's Axum & Tokio runtime).
 - **Database/Cache**: Backed by **Upstash Serverless Redis** for distributed rate limit state tracking, connected securely using Rust's `tls-rustls` SSL connector.
 - **Cross-Origin Resource Sharing (CORS)**: Configured with custom CORS policies to securely authorize cross-origin requests from the Vercel frontend and explicitly expose standard HTTP rate limit response headers (`ratelimit-*`) so client browsers can read them.
