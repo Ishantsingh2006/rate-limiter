@@ -2,6 +2,7 @@ services:
   api:
     build:
       context: .
+      network: host
     container_name: rate_limiter_api
     ports:
       - "${SERVER_PORT:-3000}:${SERVER_PORT:-3000}"

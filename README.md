@@ -31,17 +31,26 @@ cd rate-limiter
 cp .env.example .env
 ```
 
-### Running Locally
+Choose one of the two options below to run the service locally:
 
+#### Option 1: Run everything in Docker (API + Redis)
+Use this option to spin up both the Redis database and the API server containerized:
 ```bash
-# Start Redis (optional)
-docker-compose up -d
+# Start both the API server and Redis in Docker
+docker compose up -d --build
+```
+The server will start on `http://127.0.0.1:3000`.
 
-# Run the API server
+#### Option 2: Run Redis in Docker, and the API server natively
+Use this option for active development, allowing you to run and debug the Rust code locally on your host machine while using a containerized Redis instance:
+```bash
+# Start only the Redis container
+docker compose up -d redis
+
+# Run the API server natively on your host
 cargo run
 ```
-
-The server will start on `http://127.0.0.1:3000` by default.
+The native server will start on `http://127.0.0.1:3000` (or the port set in your `.env` file).
 
 ## Testing
 
@@ -55,32 +64,41 @@ cargo test -p limiter_engine
 
 ## Usage
 
-You can test the rate limiting behavior locally or directly against the live production deployment using curl.
-### 1.Consuming Quota
+You can test the rate limiting behavior locally or directly against the live production deployment using `curl`.
+
+> [!TIP]
+> By default, `curl` only displays the JSON response body. To inspect the rate-limiting HTTP response headers returned by the server (such as `ratelimit-limit`, `ratelimit-remaining`, and `ratelimit-reset`), add the `-i` flag to the `curl` commands below.
+
+### 1. Consuming Quota
 Each request to the data endpoint consumes 1 quota token.
+
 #### Test Locally:
 ```bash
-curl -i -X GET \
+curl -X GET \
   -H "Authorization: Bearer demo-client-token" \
   http://127.0.0.1:3000/api/data
 ```
+
 #### Test Production:
-```bsh
-curl -i -X GET \
+```bash
+curl -X GET \
   -H "Authorization: Bearer demo-client-token" \
   https://rate-limiter-0p1u.onrender.com/api/data
 ```
-### 2.Checking Status
+
+### 2. Checking Status
 Query the rate limit status without consuming quota:
+
 #### Test Locally:
 ```bash
-curl -i -X GET \
+curl -X GET \
   -H "Authorization: Bearer demo-client-token" \
   http://127.0.0.1:3000/api/limiter-status
 ```
+
 #### Test Production:
 ```bash
-curl -i -X GET \
+curl -X GET \
   -H "Authorization: Bearer demo-client-token" \
   https://rate-limiter-0p1u.onrender.com/api/limiter-status
 ```
