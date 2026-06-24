@@ -70,14 +70,6 @@ curl -i -X GET \
   -H "Authorization: Bearer demo-client-token" \
   https://rate-limiter-0p1u.onrender.com/api/data
 ```
-**Expected Response headers:**
-```http
-HTTP/1.1 200 OK
-ratelimit-limit: 5
-ratelimit-remaining: 4
-ratelimit-reset: 59
-cache-control: no-store, no-cache, must-revalidate
-```
 ### 2.Checking Status
 Query the rate limit status without consuming quota:
 #### Test Locally:
@@ -91,15 +83,6 @@ curl -i -X GET \
 curl -i -X GET \
   -H "Authorization: Bearer demo-client-token" \
   https://rate-limiter-0p1u.onrender.com/api/limiter-status
-```
-
-**Expected Response body:**
-```json
-{
-  "limit": 5,
-  "remaining": 4,
-  "rest_in_sec": 59
-}
 ```
 
 ## Architecture & Deployment
