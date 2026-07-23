@@ -52,16 +52,6 @@ cargo run
 ```
 The native server will start on `http://127.0.0.1:3000` (or the port set in your `.env` file).
 
-## Testing
-
-```bash
-# Run all unit and integration tests (tests both memory and Redis strategies)
-cargo test --all
-
-# Run only strategy integration tests
-cargo test -p limiter_engine
-```
-
 ## Usage
 
 You can test the rate limiting behavior locally or directly against the live production deployment using `curl`.
